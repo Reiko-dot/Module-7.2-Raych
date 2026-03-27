@@ -1,0 +1,24 @@
+{
+  "name": "module-7.2-raych",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Reiko-dot/Module-7.2-Raych.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Reiko-dot/Module-7.2-Raych/issues"
+  },
+  "homepage": "https://github.com/Reiko-dot/Module-7.2-Raych#readme",
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}
