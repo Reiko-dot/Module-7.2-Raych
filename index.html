@@ -1,11 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+<html>
+    <style>
+        button {
+            width: 100px;
+            height: 100px;
+            background-color: grey;
+
+
+        }
+    </style>
+
 <body>
-    
+    <button onclick="sendMessage('red')">Red</button>
+    <button onclick="sendMessage('blue')">Blue</button>
+    <button onclick="sendMessage('yellow')">Yellow</button>
+    <button onclick="sendMessage('green')">Green</button>
+    <p id="response"></p>
+
+    <script>    
+        const ws = new WebSocket('ws://localhost:8081'); //connects client
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            document.getElementById('response').textContent = data.response;
+        };
+
+        function sendMessage(button) {
+  console.log('Sending:', button); // add this
+  ws.send(JSON.stringify({ button }));
+}
+    </script>
 </body>
+
 </html>
