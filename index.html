@@ -1,23 +1,46 @@
 <!DOCTYPE html>
-<html>
-    <style>
-        button {
-            width: 100px;
-            height: 100px;
-            background-color: grey;
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<style>
+
+    button {
+        width: 100px;
+        height: 100px;
+        background-color: grey;
 
 
-        }
-    </style>
+    }
+</style>
 
 <body>
-    <button onclick="sendMessage('red')">Red</button> 
-    <button onclick="sendMessage('blue')">Blue</button>
-    <button onclick="sendMessage('yellow')">Yellow</button>
-    <button onclick="sendMessage('green')">Green</button>
-    <p id="response"></p>
 
-    <script>    
+    <div class="container">
+        <div class="home-section">
+            <button onclick="sendMessage('select')">Select</button>
+            <button onclick="sendMessage('home')">Home</button>
+        </div>
+
+        <div class="direction-section">
+            <button onclick="sendMessage('left')">Left</button>
+            <button onclick="sendMessage('up')">Up</button>
+            <button onclick="sendMessage('down')">Down</button>
+            <button onclick="sendMessage('right')">Right</button>
+            <p id="response"></p>
+        </div>
+        <div class="press-interact-section">
+            <button onclick="sendMessage('letter-b')">B</button>
+    <button onclick="sendMessage('letter-a')">A</button>
+        </div>
+    </div>
+    
+    
+
+    <script>
         const ws = new WebSocket('ws://localhost:8081'); //connects client
 
         ws.onmessage = (event) => {
@@ -26,11 +49,12 @@
         };
 
         function sendMessage(button) {
-  console.log('Sending:', button); // add this
-  ws.send(JSON.stringify({ button }));
-}
+            console.log('Sending:', button); // add this
+            ws.send(JSON.stringify({ button }));
+        }
     </script>
 </body>
 
 
 </html>
+
