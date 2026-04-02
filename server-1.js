@@ -8,30 +8,11 @@ wss.on('connection', (ws) => {
   ws.on('message', (raw) => {
     const data = JSON.parse(raw);
     console.log('Button pressed:', data.button); // add this
-
-    let response;
-    switch (data.button) {
-      case 'red':
-        response = 'You pressed Red!';
-        break;
-      case 'blue':
-        response = 'You pressed Blue!';
-        break;
-      case 'yellow':
-        response = 'You pressed Yellow!';
-        break;
-      case 'green':
-        response = 'You pressed Green!';
-        break;
-      default:
-        response = 'Unknown button';
-        break;
-
-    } 
+    
 
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ response }));
+        client.send(JSON.stringify({ response: data.button }));
       }
     });
   }); // closes ws.on('message')

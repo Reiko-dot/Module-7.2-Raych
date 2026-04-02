@@ -1,55 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>controller</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
-<style>
-
-    button {
-        width: 100px;
-        height: 100px;
-        background-color: grey;
-
-
-    }
-</style>
 
 <body>
 
     <div class="container">
-        <div class="home-section">
-            <button onclick="sendMessage('select')">Select</button>
-            <button onclick="sendMessage('home')">Home</button>
+
+        <div class="upper-container">
+            <div class="home-section">
+                <button class="select-btn" onclick="sendMessage('select')">Select</button>
+                <button class="home-btn" onclick="sendMessage('esc')">ESC</button>
+            </div>
+        </div>
+        <p id="status">Connecting...</p>
+
+        <div class="lower-container">
+            <div class="direction-section">
+                <button class="left-btn" onclick="sendMessage('left')">←</button>
+                <button class="up-btn" onclick="sendMessage('up')">↑</button>
+                <button class="right-btn" onclick="sendMessage('right')">→</button>
+                <button class="down-btn" onclick="sendMessage('down')">↓</button>
+                <button class="center-btn" onclick="sendMessage('center')">•</button>
+                
+            </div>
+
+            <div class="press-interact-section">
+                <button class="b-btn" onclick="sendMessage('letter-b')">B</button>
+                <button class="a-btn" onclick="sendMessage('letter-a')">A</button>
+            </div>
         </div>
 
-        <div class="direction-section">
-            <button onclick="sendMessage('left')">Left</button>
-            <button onclick="sendMessage('up')">Up</button>
-            <button onclick="sendMessage('down')">Down</button>
-            <button onclick="sendMessage('right')">Right</button>
-            <p id="response"></p>
-        </div>
-        <div class="press-interact-section">
-            <button onclick="sendMessage('letter-b')">B</button>
-    <button onclick="sendMessage('letter-a')">A</button>
-        </div>
     </div>
-    
-    
+
+
 
     <script>
-        const ws = new WebSocket('ws://localhost:8081'); //connects client
+        const ws = new WebSocket('ws://localhost:8081');
+        const responseEl = document.getElementById('response');
+        const statusEl = document.getElementById('status');
+
+        const allowedButtons = new Set(['select','esc','left','up','down','right','center','letter-a','letter-b']);
+
+        ws.onopen = () => {
+            statusEl.textContent = 'Connected';
+            statusEl.style.color = '#8efd8e';
+        };
+
+        ws.onclose = () => {
+            statusEl.textContent = 'Disconnected';
+            statusEl.style.color = '#f78c8c';
+        };
+
+        ws.onerror = () => {
+            statusEl.textContent = 'Connection error';
+            statusEl.style.color = '#ffcc00';
+        };
 
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            document.getElementById('response').textContent = data.response;
+            let data;
+            try {
+                data = JSON.parse(event.data);
+            } catch (err) {
+                console.error('Invalid JSON from server:', event.data);
+                return;
+            }
+
+            if (typeof data.response !== 'string') {
+                console.warn('Ignoring unknown response:', data);
+                return;
+            }
+
+            if (!allowedButtons.has(data.response)) {
+                console.warn('Ignoring unexpected response value:', data.response);
+                return;
+            }
+
+            responseEl.textContent = data.response;
         };
 
         function sendMessage(button) {
-            console.log('Sending:', button); // add this
+            if (ws.readyState !== WebSocket.OPEN) {
+                statusEl.textContent = 'Not connected yet';
+                statusEl.style.color = '#ffcc00';
+                return;
+            }
+            if (!allowedButtons.has(button)) {
+                console.warn('Invalid button send request:', button);
+                return;
+            }
+            console.log('Sending:', button);
             ws.send(JSON.stringify({ button }));
         }
     </script>
@@ -57,4 +103,3 @@
 
 
 </html>
-
