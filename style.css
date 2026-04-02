@@ -31,7 +31,7 @@ body {
     gap: 12px;
 }
 
-/* ── Top bar: Select | status | ESC ── */
+/* ── Top bar ── */
 .top-bar {
     display: flex;
     justify-content: center;
@@ -71,13 +71,22 @@ body {
     text-align: center;
 }
 
-/* ── Bottom row: d-pad left, A/B right ── */
+/* ── Bottom row ── */
 .bottom-row {
     flex: 1;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 4vw;
+    /* Shifted left: less left padding, more right padding */
+    padding: 0 4vw 0 0;
+}
+
+/* ── Left side: d-pad + joystick stacked ── */
+.left-side {
+    display: flex;
+    /* Align items to top so we can push joystick down independently */
+    align-items: flex-start;
+    gap: 24px;
 }
 
 /* ── D-pad ── */
@@ -86,8 +95,8 @@ body {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 8px;
-    width: min(38vh, 38vw);
-    height: min(38vh, 38vw);
+    width: 280px;
+    height: 280px;
     background: rgba(255, 255, 255, 0.08);
     border-radius: 22px;
     padding: 12px;
@@ -110,7 +119,6 @@ body {
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Grid positions */
 .up-btn {
     grid-area: 1 / 2;
 }
@@ -138,23 +146,52 @@ body {
     font-size: clamp(24px, 3.5vw, 42px) !important;
 }
 
+/* ── Joystick ── */
+.joystick-base {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    flex-shrink: 0;
+    touch-action: none;
+    cursor: pointer;
+    /* Push joystick down to sit below the d-pad center, like a real controller */
+    margin-top: 110px;
+}
+
+.joystick-stick {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #555, #1a1a1a);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.15);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s ease;
+    pointer-events: none;
+}
+
 /* ── A / B buttons ── */
 .press-interact-section {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: clamp(16px, 3vh, 32px);
+    gap: 24px;
     background: rgba(255, 255, 255, 0.08);
     border-radius: 22px;
     padding: 20px;
-    width: min(24vh, 20vw);
-    height: min(38vh, 38vw);
+    width: 160px;
+    height: 280px;
 }
 
 .press-interact-section button {
-    width: min(10vh, 10vw);
-    height: min(10vh, 10vw);
+    width: 90px;
+    height: 90px;
     border: none;
     border-radius: 50%;
     font-size: clamp(18px, 2.5vw, 32px);
@@ -174,4 +211,40 @@ body {
 
 .a-btn {
     background-color: #cc3333;
+}
+
+/* ── Landscape short screens (e.g. phone landscape) ── */
+@media (max-height: 450px) {
+    .direction-section {
+        width: 200px;
+        height: 200px;
+    }
+
+    .joystick-base {
+        width: 110px;
+        height: 110px;
+        margin-top: 76px;
+    }
+
+    .joystick-stick {
+        width: 56px;
+        height: 56px;
+    }
+
+    .press-interact-section {
+        width: 130px;
+        height: 200px;
+        gap: 16px;
+    }
+
+    .press-interact-section button {
+        width: 70px;
+        height: 70px;
+    }
+
+    .top-bar button {
+        width: 100px;
+        height: 46px;
+        font-size: 17px;
+    }
 }
