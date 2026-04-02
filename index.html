@@ -3,50 +3,49 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>controller</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
     <div class="container">
 
-        <div class="upper-container">
-            <div class="home-section">
-                <button class="select-btn" onclick="sendMessage('select')">Select</button>
-                <button class="home-btn" onclick="sendMessage('esc')">ESC</button>
-            </div>
+        <div class="top-bar">
+            <button class="select-btn" onclick="sendMessage('select')">Select</button>
+            <p id="status">Connecting...</p>
+            <button class="home-btn" onclick="sendMessage('esc')">ESC</button>
         </div>
-        <p id="status">Connecting...</p>
 
-        <div class="lower-container">
+        <div class="bottom-row">
+
             <div class="direction-section">
-                <button class="left-btn" onclick="sendMessage('left')">←</button>
-                <button class="up-btn" onclick="sendMessage('up')">↑</button>
-                <button class="right-btn" onclick="sendMessage('right')">→</button>
-                <button class="down-btn" onclick="sendMessage('down')">↓</button>
+                <button class="up-btn"     onclick="sendMessage('up')">🡹</button>
+                <button class="left-btn"   onclick="sendMessage('left')">🡸</button>
                 <button class="center-btn" onclick="sendMessage('center')">•</button>
-                
+                <button class="right-btn"  onclick="sendMessage('right')">🡺</button>
+                <button class="down-btn"   onclick="sendMessage('down')">🡻</button>
             </div>
 
             <div class="press-interact-section">
                 <button class="b-btn" onclick="sendMessage('letter-b')">B</button>
                 <button class="a-btn" onclick="sendMessage('letter-a')">A</button>
             </div>
+
         </div>
 
     </div>
 
-
-
     <script>
         const ws = new WebSocket('ws://localhost:8081');
-        const responseEl = document.getElementById('response');
         const statusEl = document.getElementById('status');
 
-        const allowedButtons = new Set(['select','esc','left','up','down','right','center','letter-a','letter-b']);
+        const allowedButtons = new Set([
+            'select', 'esc',
+            'left', 'up', 'down', 'right', 'center',
+            'letter-a', 'letter-b'
+        ]);
 
         ws.onopen = () => {
             statusEl.textContent = 'Connected';
@@ -71,35 +70,21 @@
                 console.error('Invalid JSON from server:', event.data);
                 return;
             }
-
-            if (typeof data.response !== 'string') {
-                console.warn('Ignoring unknown response:', data);
-                return;
-            }
-
-            if (!allowedButtons.has(data.response)) {
-                console.warn('Ignoring unexpected response value:', data.response);
-                return;
-            }
-
-            responseEl.textContent = data.response;
+            if (typeof data.response !== 'string') return;
+            if (!allowedButtons.has(data.response)) return;
+            console.log('Server confirmed:', data.response);
         };
 
         function sendMessage(button) {
             if (ws.readyState !== WebSocket.OPEN) {
-                statusEl.textContent = 'Not connected yet';
+                statusEl.textContent = 'Not connected';
                 statusEl.style.color = '#ffcc00';
                 return;
             }
-            if (!allowedButtons.has(button)) {
-                console.warn('Invalid button send request:', button);
-                return;
-            }
-            console.log('Sending:', button);
+            if (!allowedButtons.has(button)) return;
             ws.send(JSON.stringify({ button }));
         }
     </script>
+
 </body>
-
-
 </html>
