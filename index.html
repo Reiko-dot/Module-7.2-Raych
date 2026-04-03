@@ -29,7 +29,6 @@
                     <button class="right-btn"  onclick="sendMessage('right')">🡺</button>
                     <button class="down-btn"   onclick="sendMessage('down')">🡻</button>
                 </div>
-
                 <div class="joystick-base" id="joystickBase">
                     <div class="joystick-stick" id="joystickStick"></div>
                 </div>
@@ -40,11 +39,9 @@
                 <div class="joystick-base" id="joystickBase2">
                     <div class="joystick-stick" id="joystickStick2"></div>
                 </div>
-
                 <div class="face-section">
-                    <button class="y-btn" onclick="sendMessage('letter-y')">Y</button>
-                    <button class="x-btn" onclick="sendMessage('letter-x')">X</button>
-                    <button class="face-center-btn">•</button>
+                    <button class="y-btn"  onclick="sendMessage('letter-y')">Y</button>
+                    <button class="x-btn"  onclick="sendMessage('letter-x')">X</button>
                     <button class="b2-btn" onclick="sendMessage('letter-b')">B</button>
                     <button class="a2-btn" onclick="sendMessage('letter-a')">A</button>
                 </div>
@@ -66,21 +63,9 @@
             'rstick-up', 'rstick-down', 'rstick-left', 'rstick-right', 'rstick-center'
         ]);
 
-        ws.onopen = () => {
-            statusEl.textContent = 'Connected';
-            statusEl.style.color = '#8efd8e';
-        };
-
-        ws.onclose = () => {
-            statusEl.textContent = 'Disconnected';
-            statusEl.style.color = '#f78c8c';
-        };
-
-        ws.onerror = () => {
-            statusEl.textContent = 'Connection error';
-            statusEl.style.color = '#ffcc00';
-        };
-
+        ws.onopen = () => { statusEl.textContent = 'Connected'; statusEl.style.color = '#8efd8e'; };
+        ws.onclose = () => { statusEl.textContent = 'Disconnected'; statusEl.style.color = '#f78c8c'; };
+        ws.onerror = () => { statusEl.textContent = 'Connection error'; statusEl.style.color = '#ffcc00'; };
         ws.onmessage = (event) => {
             let data;
             try { data = JSON.parse(event.data); } catch { return; }
@@ -99,7 +84,6 @@
             ws.send(JSON.stringify({ button }));
         }
 
-        // ── Joystick factory ──
         function makeJoystick(baseEl, stickEl, prefix) {
             const DEAD_ZONE = 0.25;
             let activeTouch = null;
@@ -113,8 +97,7 @@
             function moveStick(cx, cy) {
                 const { x, y, radius } = getCenter();
                 const maxTravel = radius * 0.55;
-                let dx = cx - x;
-                let dy = cy - y;
+                let dx = cx - x, dy = cy - y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist > maxTravel) { dx = (dx / dist) * maxTravel; dy = (dy / dist) * maxTravel; }
                 stickEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
@@ -145,15 +128,13 @@
 
             baseEl.addEventListener('touchmove', (e) => {
                 e.preventDefault();
-                for (const t of e.changedTouches) {
+                for (const t of e.changedTouches)
                     if (t.identifier === activeTouch) moveStick(t.clientX, t.clientY);
-                }
             }, { passive: false });
 
             baseEl.addEventListener('touchend', (e) => {
-                for (const t of e.changedTouches) {
+                for (const t of e.changedTouches)
                     if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
-                }
             });
 
             let mouseDown = false;
@@ -162,16 +143,8 @@
             document.addEventListener('mouseup', () => { if (mouseDown) { mouseDown = false; resetStick(); } });
         }
 
-        makeJoystick(
-            document.getElementById('joystickBase'),
-            document.getElementById('joystickStick'),
-            'stick'
-        );
-        makeJoystick(
-            document.getElementById('joystickBase2'),
-            document.getElementById('joystickStick2'),
-            'rstick'
-        );
+        makeJoystick(document.getElementById('joystickBase'),  document.getElementById('joystickStick'),  'stick');
+        makeJoystick(document.getElementById('joystickBase2'), document.getElementById('joystickStick2'), 'rstick');
     </script>
 
 </body>
