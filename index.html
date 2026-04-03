@@ -20,7 +20,7 @@
 
         <div class="bottom-row">
 
-            <!-- Left side: joystick on bottom, d-pad on top -->
+            <!-- Left side: d-pad + left joystick -->
             <div class="left-side">
                 <div class="direction-section">
                     <button class="up-btn"     onclick="sendMessage('up')">🡹</button>
@@ -35,10 +35,19 @@
                 </div>
             </div>
 
-            <!-- Right side: A/B buttons -->
-            <div class="press-interact-section">
-                <button class="b-btn" onclick="sendMessage('letter-b')">B</button>
-                <button class="a-btn" onclick="sendMessage('letter-a')">A</button>
+            <!-- Right side: right joystick + YXBA face buttons -->
+            <div class="right-side">
+                <div class="joystick-base" id="joystickBase2">
+                    <div class="joystick-stick" id="joystickStick2"></div>
+                </div>
+
+                <div class="face-section">
+                    <button class="y-btn" onclick="sendMessage('letter-y')">Y</button>
+                    <button class="x-btn" onclick="sendMessage('letter-x')">X</button>
+                    <button class="face-center-btn">•</button>
+                    <button class="b2-btn" onclick="sendMessage('letter-b')">B</button>
+                    <button class="a2-btn" onclick="sendMessage('letter-a')">A</button>
+                </div>
             </div>
 
         </div>
@@ -52,8 +61,9 @@
         const allowedButtons = new Set([
             'select', 'esc',
             'left', 'up', 'down', 'right', 'center',
-            'letter-a', 'letter-b',
-            'stick-up', 'stick-down', 'stick-left', 'stick-right', 'stick-center'
+            'letter-a', 'letter-b', 'letter-x', 'letter-y',
+            'stick-up', 'stick-down', 'stick-left', 'stick-right', 'stick-center',
+            'rstick-up', 'rstick-down', 'rstick-left', 'rstick-right', 'rstick-center'
         ]);
 
         ws.onopen = () => {
@@ -89,99 +99,80 @@
             ws.send(JSON.stringify({ button }));
         }
 
-        // ── Joystick logic ──
-        const base  = document.getElementById('joystickBase');
-        const stick = document.getElementById('joystickStick');
+        // ── Joystick factory ──
+        function makeJoystick(baseEl, stickEl, prefix) {
+            const DEAD_ZONE = 0.25;
+            let activeTouch = null;
+            let lastDir = null;
 
-        const DEAD_ZONE = 0.25; // fraction of radius before direction fires
-        let activeTouch = null;
-        let lastStickDir = null;
-
-        function getCenter() {
-            const r = base.getBoundingClientRect();
-            return { x: r.left + r.width / 2, y: r.top + r.height / 2, radius: r.width / 2 };
-        }
-
-        function moveStick(cx, cy) {
-            const { x, y, radius } = getCenter();
-            const maxTravel = radius * 0.55; // how far stick can move
-
-            let dx = cx - x;
-            let dy = cy - y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            // Clamp to circle
-            if (dist > maxTravel) {
-                dx = (dx / dist) * maxTravel;
-                dy = (dy / dist) * maxTravel;
+            function getCenter() {
+                const r = baseEl.getBoundingClientRect();
+                return { x: r.left + r.width / 2, y: r.top + r.height / 2, radius: r.width / 2 };
             }
 
-            stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-
-            // Direction detection
-            const norm = dist / maxTravel;
-            let dir = 'stick-center';
-
-            if (norm > DEAD_ZONE) {
-                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                if (angle > -45 && angle <= 45)   dir = 'stick-right';
-                else if (angle > 45 && angle <= 135) dir = 'stick-down';
-                else if (angle > 135 || angle <= -135) dir = 'stick-left';
-                else dir = 'stick-up';
-            }
-
-            if (dir !== lastStickDir) {
-                lastStickDir = dir;
-                sendMessage(dir);
-            }
-        }
-
-        function resetStick() {
-            stick.style.transform = 'translate(-50%, -50%)';
-            lastStickDir = null;
-            sendMessage('stick-center');
-        }
-
-        // Touch events
-        base.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (activeTouch !== null) return;
-            activeTouch = e.changedTouches[0].identifier;
-            const t = e.changedTouches[0];
-            moveStick(t.clientX, t.clientY);
-        }, { passive: false });
-
-        base.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            for (const t of e.changedTouches) {
-                if (t.identifier === activeTouch) {
-                    moveStick(t.clientX, t.clientY);
+            function moveStick(cx, cy) {
+                const { x, y, radius } = getCenter();
+                const maxTravel = radius * 0.55;
+                let dx = cx - x;
+                let dy = cy - y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > maxTravel) { dx = (dx / dist) * maxTravel; dy = (dy / dist) * maxTravel; }
+                stickEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                const norm = dist / maxTravel;
+                let dir = prefix + '-center';
+                if (norm > DEAD_ZONE) {
+                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                    if (angle > -45 && angle <= 45)        dir = prefix + '-right';
+                    else if (angle > 45 && angle <= 135)   dir = prefix + '-down';
+                    else if (angle > 135 || angle <= -135) dir = prefix + '-left';
+                    else                                    dir = prefix + '-up';
                 }
+                if (dir !== lastDir) { lastDir = dir; sendMessage(dir); }
             }
-        }, { passive: false });
 
-        base.addEventListener('touchend', (e) => {
-            for (const t of e.changedTouches) {
-                if (t.identifier === activeTouch) {
-                    activeTouch = null;
-                    resetStick();
+            function resetStick() {
+                stickEl.style.transform = 'translate(-50%, -50%)';
+                lastDir = null;
+                sendMessage(prefix + '-center');
+            }
+
+            baseEl.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (activeTouch !== null) return;
+                activeTouch = e.changedTouches[0].identifier;
+                moveStick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            }, { passive: false });
+
+            baseEl.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                for (const t of e.changedTouches) {
+                    if (t.identifier === activeTouch) moveStick(t.clientX, t.clientY);
                 }
-            }
-        });
+            }, { passive: false });
 
-        // Mouse events (for testing on desktop)
-        let mouseDown = false;
-        base.addEventListener('mousedown', (e) => {
-            mouseDown = true;
-            moveStick(e.clientX, e.clientY);
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (mouseDown) moveStick(e.clientX, e.clientY);
-        });
-        document.addEventListener('mouseup', () => {
-            if (mouseDown) { mouseDown = false; resetStick(); }
-        });
+            baseEl.addEventListener('touchend', (e) => {
+                for (const t of e.changedTouches) {
+                    if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
+                }
+            });
+
+            let mouseDown = false;
+            baseEl.addEventListener('mousedown', (e) => { mouseDown = true; moveStick(e.clientX, e.clientY); });
+            document.addEventListener('mousemove', (e) => { if (mouseDown) moveStick(e.clientX, e.clientY); });
+            document.addEventListener('mouseup', () => { if (mouseDown) { mouseDown = false; resetStick(); } });
+        }
+
+        makeJoystick(
+            document.getElementById('joystickBase'),
+            document.getElementById('joystickStick'),
+            'stick'
+        );
+        makeJoystick(
+            document.getElementById('joystickBase2'),
+            document.getElementById('joystickStick2'),
+            'rstick'
+        );
     </script>
 
 </body>
-</html> 
+</html>

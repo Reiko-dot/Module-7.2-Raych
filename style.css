@@ -18,7 +18,6 @@ body {
     touch-action: manipulation;
 }
 
-/* ── Main container ── */
 .container {
     width: 96vw;
     height: 92vh;
@@ -55,13 +54,8 @@ body {
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-.select-btn {
-    background-color: #4da6ff;
-}
-
-.home-btn {
-    background-color: #66cc66;
-}
+.select-btn { background-color: #4da6ff; }
+.home-btn   { background-color: #66cc66; }
 
 #status {
     color: #fff;
@@ -77,16 +71,21 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* Shifted left: less left padding, more right padding */
-    padding: 0 4vw 0 0;
+    padding: 0 2vw;
 }
 
-/* ── Left side: d-pad + joystick stacked ── */
+/* ── Left side: d-pad (top) + left joystick (bottom) ── */
 .left-side {
     display: flex;
-    /* Align items to top so we can push joystick down independently */
-    align-items: flex-start;
-    gap: 24px;
+    align-items: center;
+    gap: 20px;
+}
+
+/* ── Right side: right joystick (bottom) + face buttons (top) — mirror of left ── */
+.right-side {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 /* ── D-pad ── */
@@ -95,16 +94,14 @@ body {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 8px;
-    width: 280px;
-    height: 280px;
-    background: rgba(255, 255, 255, 0.08);
     border-radius: 22px;
-    padding: 12px;
+    padding: 0;
+    transform: translateY(-10%);
 }
 
 .direction-section button {
-    width: 100%;
-    height: 100%;
+    width: 70px;
+    height: 70px;
     border: none;
     border-radius: 12px;
     font-size: clamp(20px, 3vw, 36px);
@@ -119,25 +116,11 @@ body {
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-.up-btn {
-    grid-area: 1 / 2;
-}
-
-.left-btn {
-    grid-area: 2 / 1;
-}
-
-.center-btn {
-    grid-area: 2 / 2;
-}
-
-.right-btn {
-    grid-area: 2 / 3;
-}
-
-.down-btn {
-    grid-area: 3 / 2;
-}
+.up-btn     { grid-area: 1 / 2; }
+.left-btn   { grid-area: 2 / 1; }
+.center-btn { grid-area: 2 / 2; }
+.right-btn  { grid-area: 2 / 3; }
+.down-btn   { grid-area: 3 / 2; }
 
 .center-btn {
     border-radius: 50% !important;
@@ -146,7 +129,42 @@ body {
     font-size: clamp(24px, 3.5vw, 42px) !important;
 }
 
-/* ── Joystick ── */
+/* ── YXBA face buttons (mirrors d-pad grid) ── */
+.face-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    border-radius: 22px;
+    padding: 0;
+    transform: translateY(-10%);
+}
+
+.face-section button {
+    width: 70px;
+    height: 70px;
+    border: none;
+    border-radius: 12px;
+    font-size: clamp(18px, 2.5vw, 28px);
+    font-weight: bold;
+    color: rgb(240, 240, 240);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.face-section button:active {
+    transform: scale(0.93);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Diamond layout same as d-pad */
+.y-btn          { grid-area: 1 / 2; background-color: #4da6ff; }
+.x-btn          { grid-area: 2 / 1; background-color: #cc66ff; }
+.face-center-btn{ grid-area: 2 / 2; border-radius: 50% !important; background: #ccc !important; color: #000 !important; }
+.b2-btn         { grid-area: 2 / 3; background-color: #ff6699; }
+.a2-btn         { grid-area: 3 / 2; background-color: #cc3333; }
+
+/* ── Joysticks ── */
 .joystick-base {
     width: 140px;
     height: 140px;
@@ -157,8 +175,7 @@ body {
     flex-shrink: 0;
     touch-action: none;
     cursor: pointer;
-    /* Push joystick down to sit below the d-pad center, like a real controller */
-    margin-top: 110px;
+    transform: translateY(120%);
 }
 
 .joystick-stick {
@@ -175,71 +192,34 @@ body {
     pointer-events: none;
 }
 
-/* ── A / B buttons ── */
-.press-interact-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 22px;
-    padding: 20px;
-    width: 160px;
-    height: 280px;
-}
-
-.press-interact-section button {
-    width: 90px;
-    height: 90px;
-    border: none;
-    border-radius: 50%;
-    font-size: clamp(18px, 2.5vw, 32px);
-    color: rgb(240, 240, 240);
-    cursor: pointer;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-
-.press-interact-section button:active {
-    transform: scale(0.93);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-.b-btn {
-    background-color: #ff6699;
-}
-
-.a-btn {
-    background-color: #cc3333;
-}
-
-/* ── Landscape short screens (e.g. phone landscape) ── */
+/* ── Landscape short screens ── */
 @media (max-height: 450px) {
-    .direction-section {
-        width: 200px;
-        height: 200px;
+    .direction-section button,
+    .face-section button {
+        width: 50px;
+        height: 50px;
     }
 
     .joystick-base {
-        width: 110px;
-        height: 110px;
-        margin-top: 76px;
+        width: 100px;
+        height: 100px;
+        transform: translateY(100%);
     }
 
     .joystick-stick {
-        width: 56px;
-        height: 56px;
+        width: 50px;
+        height: 50px;
     }
 
     .press-interact-section {
-        width: 130px;
-        height: 200px;
+        width: 90px;
+        height: 180px;
         gap: 16px;
     }
 
     .press-interact-section button {
-        width: 70px;
-        height: 70px;
+        width: 64px;
+        height: 64px;
     }
 
     .top-bar button {
