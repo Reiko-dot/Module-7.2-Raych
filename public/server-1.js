@@ -9,18 +9,17 @@ wss.on('connection', (ws) => {
   ws.on('message', (raw) => {
     const data = JSON.parse(raw);
     console.log('Button pressed:', data.button);
-    const robot = require('robotjs');
 
-    // in ws.on('message'):
-    if (data.button === 'up') robot.keyTap('w');
-    if (data.button === 'down') robot.keyTap('s');
-    if (data.button === 'left') robot.keyTap('a');
-    if (data.button === 'right') robot.keyTap('d');
+    if (data.button === 'up')       robot.keyTap('up');
+    if (data.button === 'down')     robot.keyTap('down');
+    if (data.button === 'left')     robot.keyTap('left');
+    if (data.button === 'right')    robot.keyTap('right');
     if (data.button === 'letter-a') robot.keyTap('space');
     if (data.button === 'letter-b') robot.keyTap('b');
     if (data.button === 'letter-x') robot.keyTap('x');
     if (data.button === 'letter-y') robot.keyTap('y');
-    if (data.button === 'esc') robot.keyTap('escape');
+    if (data.button === 'esc')      robot.keyTap('escape');
+
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ response: data.button }));
