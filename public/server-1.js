@@ -78,6 +78,33 @@ wss.on('connection', (ws) => {
     let heldStickKey  = null;      // the key currently held by the left joystick
     let heldRstickKey = null;      // the key currently held by the right joystick
 
+    // Watchdog timers: if no joystick message arrives within 300ms, auto-release the stuck key
+    // This fixes the "character keeps moving" bug when a release message gets lost
+    let stickWatchdog  = null;
+    let rstickWatchdog = null;
+
+    function resetStickWatchdog() {
+        clearTimeout(stickWatchdog);
+        stickWatchdog = setTimeout(async () => {
+            if (heldStickKey !== null) {
+                console.log('Watchdog: releasing stuck left stick key');
+                await keyboard.releaseKey(heldStickKey);
+                heldStickKey = null;
+            }
+        }, 300);
+    }
+
+    function resetRstickWatchdog() {
+        clearTimeout(rstickWatchdog);
+        rstickWatchdog = setTimeout(async () => {
+            if (heldRstickKey !== null) {
+                console.log('Watchdog: releasing stuck right stick key');
+                await keyboard.releaseKey(heldRstickKey);
+                heldRstickKey = null;
+            }
+        }, 300);
+    }
+
     ws.on('message', async (raw) => {
         let data;
         try { data = JSON.parse(raw); } catch { return; } // ignore invalid messages
@@ -106,6 +133,7 @@ wss.on('connection', (ws) => {
         // When the stick moves to a new direction: release the old key, press the new one
         // When the stick returns to center: release whatever was held
         if (button === 'stick-center' || (isRelease && button.startsWith('stick-'))) {
+            clearTimeout(stickWatchdog); // no longer needed, stick is centered
             if (heldStickKey !== null) {
                 await keyboard.releaseKey(heldStickKey);
                 heldStickKey = null;
@@ -117,10 +145,12 @@ wss.on('connection', (ws) => {
                 await keyboard.pressKey(newKey); // press new direction
                 heldStickKey = newKey;
             }
+            resetStickWatchdog(); // restart the watchdog every time a direction is held
         }
 
         // ── Right joystick ── (same logic as left joystick)
         if (button === 'rstick-center' || (isRelease && button.startsWith('rstick-'))) {
+            clearTimeout(rstickWatchdog); // no longer needed, stick is centered
             if (heldRstickKey !== null) {
                 await keyboard.releaseKey(heldRstickKey);
                 heldRstickKey = null;
@@ -132,6 +162,7 @@ wss.on('connection', (ws) => {
                 await keyboard.pressKey(newKey);
                 heldRstickKey = newKey;
             }
+            resetRstickWatchdog(); // restart the watchdog every time a direction is held
         }
 
         // Send the button name back to the controller as confirmation
