@@ -13,9 +13,9 @@
     <div class="container">
 
         <div class="top-bar">
-            <button class="select-btn" tabindex="-1" onclick="sendMessage('select')">Select</button>
+            <button class="select-btn" tabindex="-1" data-msg="select">Select</button>
             <p id="status">Connecting...</p>
-            <button class="home-btn" tabindex="-1" onclick="sendMessage('esc')">ESC</button>
+            <button class="home-btn" tabindex="-1" data-msg="esc">ESC</button>
         </div>
 
         <div class="bottom-row">
@@ -23,11 +23,11 @@
             <!-- Left side: d-pad + left joystick -->
             <div class="left-side">
                 <div class="direction-section">
-                    <button class="up-btn"     tabindex="-1" onclick="sendMessage('up')">🡹</button>
-                    <button class="left-btn"   tabindex="-1" onclick="sendMessage('left')">🡸</button>
-                    <button class="center-btn" tabindex="-1" onclick="sendMessage('center')">•</button>
-                    <button class="right-btn"  tabindex="-1" onclick="sendMessage('right')">🡺</button>
-                    <button class="down-btn"   tabindex="-1" onclick="sendMessage('down')">🡻</button>
+                    <button class="up-btn"     tabindex="-1" data-msg="up">🡹</button>
+                    <button class="left-btn"   tabindex="-1" data-msg="left">🡸</button>
+                    <button class="center-btn" tabindex="-1" data-msg="center">•</button>
+                    <button class="right-btn"  tabindex="-1" data-msg="right">🡺</button>
+                    <button class="down-btn"   tabindex="-1" data-msg="down">🡻</button>
                 </div>
                 <div class="joystick-base" id="joystickBase">
                     <div class="joystick-stick" id="joystickStick"></div>
@@ -40,10 +40,10 @@
                     <div class="joystick-stick" id="joystickStick2"></div>
                 </div>
                 <div class="face-section">
-                    <button class="y-btn"  tabindex="-1" onclick="sendMessage('letter-y')">Y</button>
-                    <button class="x-btn"  tabindex="-1" onclick="sendMessage('letter-x')">X</button>
-                    <button class="b2-btn" tabindex="-1" onclick="sendMessage('letter-b')">B</button>
-                    <button class="a2-btn" tabindex="-1" onclick="sendMessage('letter-a')">A</button>
+                    <button class="y-btn"  tabindex="-1" data-msg="letter-y">Y</button>
+                    <button class="x-btn"  tabindex="-1" data-msg="letter-x">X</button>
+                    <button class="b2-btn" tabindex="-1" data-msg="letter-b">B</button>
+                    <button class="a2-btn" tabindex="-1" data-msg="letter-a">A</button>
                 </div>
             </div>
 
@@ -74,6 +74,9 @@
             console.log('Server confirmed:', data.response);
         };
 
+        // Cooldown map: prevents a button from firing more than once per 150ms
+        const lastSent = {};
+
         function sendMessage(button) {
             if (ws.readyState !== WebSocket.OPEN) {
                 statusEl.textContent = 'Not connected';
@@ -81,8 +84,29 @@
                 return;
             }
             if (!allowedButtons.has(button)) return;
+
+            const now = Date.now();
+            if (lastSent[button] && now - lastSent[button] < 150) return;
+            lastSent[button] = now;
+
             ws.send(JSON.stringify({ button }));
         }
+
+        // Attach button handlers via touchstart (mobile) + click (desktop).
+        // touchstart calls e.preventDefault() which blocks the synthetic click/mousedown
+        // that would otherwise bubble and re-trigger sendMessage repeatedly.
+        document.querySelectorAll('[data-msg]').forEach(btn => {
+            const msg = btn.dataset.msg;
+
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();      // block synthetic mouse events
+                e.stopPropagation();     // stop bubbling to joystick listeners
+                sendMessage(msg);
+            }, { passive: false });
+
+            // Fallback for desktop mouse clicks
+            btn.addEventListener('click', () => sendMessage(msg));
+        });
 
         function makeJoystick(baseEl, stickEl, prefix) {
             const DEAD_ZONE = 0.25;
