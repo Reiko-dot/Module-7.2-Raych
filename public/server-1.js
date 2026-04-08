@@ -21,7 +21,6 @@ wss.on('connection', (ws) => {
     if (data.button === 'letter-x') robot.keyTap('x');
     if (data.button === 'letter-y') robot.keyTap('y');
     if (data.button === 'esc') robot.keyTap('escape');
-
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ response: data.button }));
