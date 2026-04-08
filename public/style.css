@@ -2,6 +2,10 @@
 *::before,
 *::after {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* verwijder blauwe highlight op mobiel */
+    tap-highlight-color: transparent;
+    user-select: none; /* voorkom tekst selectie */
+    -webkit-user-select: none;
 }
 
 body {
@@ -12,6 +16,7 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    position: fixed; /* voorkom scrollen op mobiel */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -45,6 +50,7 @@ body {
     font-size: 20px;
     color: rgb(240, 240, 240);
     cursor: pointer;
+    touch-action: manipulation; /* verwijder 300ms tap delay */
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -109,6 +115,7 @@ body {
     color: rgb(240, 240, 240);
     background-color: #371a45;
     cursor: pointer;
+    touch-action: manipulation; /* verwijder 300ms tap delay */
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -164,6 +171,7 @@ body {
     font-weight: bold;
     color: rgb(240, 240, 240);
     cursor: pointer;
+    touch-action: manipulation; /* verwijder 300ms tap delay */
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -204,7 +212,6 @@ body {
     touch-action: none;
     cursor: pointer;
     transform: translateY(70%);
-    /* ← raised from 120% */
 }
 
 .joystick-stick {
