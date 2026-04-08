@@ -13,9 +13,9 @@
     <div class="container">
 
         <div class="top-bar">
-            <button class="select-btn" onclick="sendMessage('select')">Select</button>
+            <button class="select-btn" tabindex="-1" onclick="sendMessage('select')">Select</button>
             <p id="status">Connecting...</p>
-            <button class="home-btn" onclick="sendMessage('esc')">ESC</button>
+            <button class="home-btn" tabindex="-1" onclick="sendMessage('esc')">ESC</button>
         </div>
 
         <div class="bottom-row">
@@ -23,11 +23,11 @@
             <!-- Left side: d-pad + left joystick -->
             <div class="left-side">
                 <div class="direction-section">
-                    <button class="up-btn"     onclick="sendMessage('up')">🡹</button>
-                    <button class="left-btn"   onclick="sendMessage('left')">🡸</button>
-                    <button class="center-btn" onclick="sendMessage('center')">•</button>
-                    <button class="right-btn"  onclick="sendMessage('right')">🡺</button>
-                    <button class="down-btn"   onclick="sendMessage('down')">🡻</button>
+                    <button class="up-btn"     tabindex="-1" onclick="sendMessage('up')">🡹</button>
+                    <button class="left-btn"   tabindex="-1" onclick="sendMessage('left')">🡸</button>
+                    <button class="center-btn" tabindex="-1" onclick="sendMessage('center')">•</button>
+                    <button class="right-btn"  tabindex="-1" onclick="sendMessage('right')">🡺</button>
+                    <button class="down-btn"   tabindex="-1" onclick="sendMessage('down')">🡻</button>
                 </div>
                 <div class="joystick-base" id="joystickBase">
                     <div class="joystick-stick" id="joystickStick"></div>
@@ -40,10 +40,10 @@
                     <div class="joystick-stick" id="joystickStick2"></div>
                 </div>
                 <div class="face-section">
-                    <button class="y-btn"  onclick="sendMessage('letter-y')">Y</button>
-                    <button class="x-btn"  onclick="sendMessage('letter-x')">X</button>
-                    <button class="b2-btn" onclick="sendMessage('letter-b')">B</button>
-                    <button class="a2-btn" onclick="sendMessage('letter-a')">A</button>
+                    <button class="y-btn"  tabindex="-1" onclick="sendMessage('letter-y')">Y</button>
+                    <button class="x-btn"  tabindex="-1" onclick="sendMessage('letter-x')">X</button>
+                    <button class="b2-btn" tabindex="-1" onclick="sendMessage('letter-b')">B</button>
+                    <button class="a2-btn" tabindex="-1" onclick="sendMessage('letter-a')">A</button>
                 </div>
             </div>
 

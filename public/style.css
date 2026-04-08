@@ -83,19 +83,19 @@ body {
     flex: 1;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0 2vw;
+    align-items: flex-end;
+    padding: 0 2vw 6% 2vw;
 }
 
 .left-side {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 20px;
 }
 
 .right-side {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 20px;
 }
 
@@ -217,11 +217,6 @@ body {
     flex-shrink: 0;
     touch-action: none;
     cursor: pointer;
-    /* FIX: was translateY(70%) which visually shifted down but kept the element's
-       collision box in the original spot — causing it to overlap face buttons.
-       align-self: flex-end achieves the same "sits lower" look while keeping
-       the element actually at the bottom so there's no invisible overlap. */
-    align-self: flex-end;
 }
 
 .joystick-stick {
