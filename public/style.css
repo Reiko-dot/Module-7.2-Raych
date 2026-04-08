@@ -3,8 +3,10 @@
 *::after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    /* verwijder blauwe highlight op mobiel */
     tap-highlight-color: transparent;
     user-select: none;
+    /* voorkom tekst selectie */
     -webkit-user-select: none;
 }
 
@@ -17,6 +19,7 @@ body {
     height: 100vh;
     overflow: hidden;
     position: fixed;
+    /* voorkom scrollen op mobiel */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -51,6 +54,7 @@ body {
     color: rgb(240, 240, 240);
     cursor: pointer;
     touch-action: manipulation;
+    /* verwijder 300ms tap delay */
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -83,14 +87,16 @@ body {
     padding: 0 2vw;
 }
 
-/* Left and right sides are now columns: controls on top, joystick below.
-   This prevents the joystick from ever overlapping the buttons. */
-.left-side,
+.left-side {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
 .right-side {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
 /* ── D-pad ── */
@@ -101,6 +107,7 @@ body {
     gap: 8px;
     border-radius: 22px;
     padding: 0;
+    transform: translateY(-10%);
 }
 
 .direction-section button {
@@ -113,6 +120,7 @@ body {
     background-color: #371a45;
     cursor: pointer;
     touch-action: manipulation;
+    /* verwijder 300ms tap delay */
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -121,11 +129,25 @@ body {
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-.up-btn    { grid-area: 1 / 2; }
-.left-btn  { grid-area: 2 / 1; }
-.center-btn{ grid-area: 2 / 2; }
-.right-btn { grid-area: 2 / 3; }
-.down-btn  { grid-area: 3 / 2; }
+.up-btn {
+    grid-area: 1 / 2;
+}
+
+.left-btn {
+    grid-area: 2 / 1;
+}
+
+.center-btn {
+    grid-area: 2 / 2;
+}
+
+.right-btn {
+    grid-area: 2 / 3;
+}
+
+.down-btn {
+    grid-area: 3 / 2;
+}
 
 .center-btn {
     border-radius: 50% !important;
@@ -142,6 +164,7 @@ body {
     gap: 8px;
     border-radius: 22px;
     padding: 0;
+    transform: translateY(-10%);
 }
 
 .face-section button {
@@ -154,6 +177,7 @@ body {
     color: rgb(240, 240, 240);
     cursor: pointer;
     touch-action: manipulation;
+    /* verwijder 300ms tap delay */
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -162,10 +186,25 @@ body {
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-.y-btn  { grid-area: 1 / 2; background-color: #4da6ff; }
-.x-btn  { grid-area: 2 / 1; background-color: #cc66ff; }
-.b2-btn { grid-area: 2 / 3; background-color: #ff6699; }
-.a2-btn { grid-area: 3 / 2; background-color: #cc3333; }
+.y-btn {
+    grid-area: 1 / 2;
+    background-color: #4da6ff;
+}
+
+.x-btn {
+    grid-area: 2 / 1;
+    background-color: #cc66ff;
+}
+
+.b2-btn {
+    grid-area: 2 / 3;
+    background-color: #ff6699;
+}
+
+.a2-btn {
+    grid-area: 3 / 2;
+    background-color: #cc3333;
+}
 
 /* ── Joysticks ── */
 .joystick-base {
@@ -178,7 +217,11 @@ body {
     flex-shrink: 0;
     touch-action: none;
     cursor: pointer;
-    /* No more translateY hack — column layout handles positioning */
+    /* FIX: was translateY(70%) which visually shifted down but kept the element's
+       collision box in the original spot — causing it to overlap face buttons.
+       align-self: flex-end achieves the same "sits lower" look while keeping
+       the element actually at the bottom so there's no invisible overlap. */
+    align-self: flex-end;
 }
 
 .joystick-stick {
