@@ -43,6 +43,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: 24px;
+    position: relative;
 }
 
 .top-bar button {
@@ -77,6 +78,33 @@ body {
     margin: 0;
     min-width: 120px;
     text-align: center;
+}
+
+.fullscreen-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.fullscreen-btn:active {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: translateY(-50%) scale(0.93);
 }
 
 .bottom-row {

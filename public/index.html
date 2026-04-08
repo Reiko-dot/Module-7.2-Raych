@@ -16,6 +16,7 @@
             <button class="select-btn" tabindex="-1" data-msg="select">Select</button>
             <p id="status">Connecting...</p>
             <button class="home-btn" tabindex="-1" data-msg="esc">ESC</button>
+            <button class="fullscreen-btn" id="fullscreenBtn" tabindex="-1" title="Toggle fullscreen">⛶</button>
         </div>
 
         <div class="bottom-row">
@@ -169,6 +170,30 @@
 
         makeJoystick(document.getElementById('joystickBase'),  document.getElementById('joystickStick'),  'stick');
         makeJoystick(document.getElementById('joystickBase2'), document.getElementById('joystickStick2'), 'rstick');
+
+        // Fullscreen toggle
+        const fsBtn = document.getElementById('fullscreenBtn');
+
+        function updateFsIcon() {
+            fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+            fsBtn.title = document.fullscreenElement ? 'Exit fullscreen' : 'Go fullscreen';
+        }
+
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
+
+        fsBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fsBtn.click();
+        }, { passive: false });
+
+        document.addEventListener('fullscreenchange', updateFsIcon);
     </script>
 
 </body>
