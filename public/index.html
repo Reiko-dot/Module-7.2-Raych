@@ -12,7 +12,6 @@
 
     <div class="container">
 
-        <!-- Top bar: Select button, connection status, ESC button, fullscreen button -->
         <div class="top-bar">
             <button class="select-btn" tabindex="-1" data-msg="select">Select</button>
             <p id="status">Connecting...</p>
@@ -22,9 +21,8 @@
 
         <div class="bottom-row">
 
-            <!-- Left side: D-pad + left joystick -->
+            <!-- Left side: d-pad + left joystick -->
             <div class="left-side">
-                <!-- D-pad: up/left/center/right/down buttons -->
                 <div class="direction-section">
                     <button class="up-btn"     tabindex="-1" data-msg="up">🡹</button>
                     <button class="left-btn"   tabindex="-1" data-msg="left">🡸</button>
@@ -32,7 +30,6 @@
                     <button class="right-btn"  tabindex="-1" data-msg="right">🡺</button>
                     <button class="down-btn"   tabindex="-1" data-msg="down">🡻</button>
                 </div>
-                <!-- Left joystick -->
                 <div class="joystick-base" id="joystickBase">
                     <div class="joystick-stick" id="joystickStick"></div>
                 </div>
@@ -40,11 +37,9 @@
 
             <!-- Right side: right joystick + YXBA face buttons -->
             <div class="right-side">
-                <!-- Right joystick -->
                 <div class="joystick-base" id="joystickBase2">
                     <div class="joystick-stick" id="joystickStick2"></div>
                 </div>
-                <!-- Face buttons: Y (top), X (left), B (right), A (bottom) -->
                 <div class="face-section">
                     <button class="y-btn"  tabindex="-1" data-msg="letter-y">Y</button>
                     <button class="x-btn"  tabindex="-1" data-msg="letter-x">X</button>
@@ -58,11 +53,15 @@
     </div>
 
     <script>
-        // Connect to the WebSocket server running on the same machine (port 8081)
+        // Try to lock the screen to landscape using the Screen Orientation API (works on Android Chrome)
+        // If the browser blocks it (e.g. not a PWA), the CSS fallback in style.css handles it instead
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
+
         const ws = new WebSocket(`ws://${location.hostname}:8081`);
         const statusEl = document.getElementById('status');
 
-        // List of buttons the controller is allowed to send — anything not in this list gets ignored
         const allowedButtons = new Set([
             'select', 'esc',
             'left', 'up', 'down', 'right', 'center',
@@ -71,12 +70,9 @@
             'rstick-up', 'rstick-down', 'rstick-left', 'rstick-right', 'rstick-center'
         ]);
 
-        // Update the status text when the connection opens, closes, or errors
-        ws.onopen  = () => { statusEl.textContent = 'Connected';        statusEl.style.color = '#8efd8e'; };
-        ws.onclose = () => { statusEl.textContent = 'Disconnected';     statusEl.style.color = '#f78c8c'; };
+        ws.onopen = () => { statusEl.textContent = 'Connected'; statusEl.style.color = '#8efd8e'; };
+        ws.onclose = () => { statusEl.textContent = 'Disconnected'; statusEl.style.color = '#f78c8c'; };
         ws.onerror = () => { statusEl.textContent = 'Connection error'; statusEl.style.color = '#ffcc00'; };
-
-        // When the server sends a message back, log it to the console (just a confirmation)
         ws.onmessage = (event) => {
             let data;
             try { data = JSON.parse(event.data); } catch { return; }
@@ -85,100 +81,78 @@
             console.log('Server confirmed:', data.response);
         };
 
-        // Send a button event (press or release) to the server
-        function send(button, action) {
+        // Cooldown map: prevents a button from firing more than once per 150ms
+        const lastSent = {};
+
+        function sendMessage(button) {
             if (ws.readyState !== WebSocket.OPEN) {
                 statusEl.textContent = 'Not connected';
                 statusEl.style.color = '#ffcc00';
                 return;
             }
             if (!allowedButtons.has(button)) return;
-            ws.send(JSON.stringify({ button, action }));
+
+            const now = Date.now();
+            if (lastSent[button] && now - lastSent[button] < 150) return;
+            lastSent[button] = now;
+
+            ws.send(JSON.stringify({ button }));
         }
 
-        // Joysticks only send 'press' (direction changes), so this shortcut is used there
-        function sendMessage(button) { send(button, 'press'); }
-
-        // Loop over every button that has a data-msg attribute and attach press + release events
+        // Attach button handlers via touchstart (mobile) + click (desktop).
+        // touchstart calls e.preventDefault() which blocks the synthetic click/mousedown
+        // that would otherwise bubble and re-trigger sendMessage repeatedly.
         document.querySelectorAll('[data-msg]').forEach(btn => {
             const msg = btn.dataset.msg;
 
-            // Mobile: finger touches the button → press
             btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();      // stop the browser from also firing a click event
-                e.stopPropagation();     // stop the touch from reaching the joystick underneath
-                send(msg, 'press');
+                e.preventDefault();      // block synthetic mouse events
+                e.stopPropagation();     // stop bubbling to joystick listeners
+                sendMessage(msg);
             }, { passive: false });
 
-            // Mobile: finger lifts off → release
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                send(msg, 'release');
-            }, { passive: false });
-
-            // Desktop: mouse button down → press
-            btn.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                send(msg, 'press');
-            });
-
-            // Desktop: mouse button up or cursor leaves the button → release
-            btn.addEventListener('mouseup',    () => send(msg, 'release'));
-            btn.addEventListener('mouseleave', () => send(msg, 'release'));
+            // Fallback for desktop mouse clicks
+            btn.addEventListener('click', () => sendMessage(msg));
         });
 
-        // ── Joystick logic ────────────────────────────────────────────────────
-        // Creates a draggable joystick that sends directional messages to the server.
-        // prefix = 'stick' for the left joystick, 'rstick' for the right one.
         function makeJoystick(baseEl, stickEl, prefix) {
-            const DEAD_ZONE = 0.25; // ignore movement inside 25% of the joystick radius
-            let activeTouch = null; // which finger is currently on this joystick
-            let lastDir = null;     // last direction sent, so we don't spam the same message
+            const DEAD_ZONE = 0.25;
+            let activeTouch = null;
+            let lastDir = null;
 
-            // Get the center position and radius of the joystick base element
             function getCenter() {
                 const r = baseEl.getBoundingClientRect();
                 return { x: r.left + r.width / 2, y: r.top + r.height / 2, radius: r.width / 2 };
             }
 
-            // Move the stick visually and send the direction to the server if it changed
             function moveStick(cx, cy) {
                 const { x, y, radius } = getCenter();
-                const maxTravel = radius * 0.55; // stick can move up to 55% of the base radius
+                const maxTravel = radius * 0.55;
                 let dx = cx - x, dy = cy - y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-
-                // Clamp the stick so it doesn't go outside the base
                 if (dist > maxTravel) { dx = (dx / dist) * maxTravel; dy = (dy / dist) * maxTravel; }
                 stickEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-
-                // Figure out which direction the stick is pointing
                 const norm = dist / maxTravel;
-                let dir = prefix + '-center'; // default: inside dead zone
+                let dir = prefix + '-center';
                 if (norm > DEAD_ZONE) {
                     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                    if      (angle > -45  && angle <= 45)   dir = prefix + '-right';
-                    else if (angle > 45   && angle <= 135)  dir = prefix + '-down';
-                    else if (angle > 135  || angle <= -135) dir = prefix + '-left';
-                    else                                     dir = prefix + '-up';
+                    if (angle > -45 && angle <= 45)        dir = prefix + '-right';
+                    else if (angle > 45 && angle <= 135)   dir = prefix + '-down';
+                    else if (angle > 135 || angle <= -135) dir = prefix + '-left';
+                    else                                    dir = prefix + '-up';
                 }
-
-                // Only send if the direction actually changed (avoids spamming)
                 if (dir !== lastDir) { lastDir = dir; sendMessage(dir); }
             }
 
-            // Snap stick back to center and tell the server it's centered
             function resetStick() {
                 stickEl.style.transform = 'translate(-50%, -50%)';
                 lastDir = null;
                 sendMessage(prefix + '-center');
             }
 
-            // Mobile touch events
             baseEl.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (activeTouch !== null) return; // ignore a second finger on the same joystick
+                if (activeTouch !== null) return;
                 activeTouch = e.changedTouches[0].identifier;
                 moveStick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
             }, { passive: false });
@@ -194,27 +168,23 @@
                     if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
             });
 
-            // Desktop mouse events (for testing in a browser)
             let mouseDown = false;
-            baseEl.addEventListener('mousedown',    (e) => { mouseDown = true;  moveStick(e.clientX, e.clientY); });
-            document.addEventListener('mousemove',  (e) => { if (mouseDown) moveStick(e.clientX, e.clientY); });
-            document.addEventListener('mouseup',    ()  => { if (mouseDown) { mouseDown = false; resetStick(); } });
+            baseEl.addEventListener('mousedown', (e) => { mouseDown = true; moveStick(e.clientX, e.clientY); });
+            document.addEventListener('mousemove', (e) => { if (mouseDown) moveStick(e.clientX, e.clientY); });
+            document.addEventListener('mouseup', () => { if (mouseDown) { mouseDown = false; resetStick(); } });
         }
 
-        // Create both joysticks
         makeJoystick(document.getElementById('joystickBase'),  document.getElementById('joystickStick'),  'stick');
         makeJoystick(document.getElementById('joystickBase2'), document.getElementById('joystickStick2'), 'rstick');
 
-        // ── Fullscreen button ─────────────────────────────────────────────────
+        // Fullscreen toggle
         const fsBtn = document.getElementById('fullscreenBtn');
 
-        // Swap the icon depending on whether we're currently in fullscreen
         function updateFsIcon() {
             fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
-            fsBtn.title       = document.fullscreenElement ? 'Exit fullscreen' : 'Go fullscreen';
+            fsBtn.title = document.fullscreenElement ? 'Exit fullscreen' : 'Go fullscreen';
         }
 
-        // Toggle fullscreen on click
         fsBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
@@ -223,14 +193,12 @@
             }
         });
 
-        // Same for touch (mobile)
         fsBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
             fsBtn.click();
         }, { passive: false });
 
-        // Keep the icon in sync whenever fullscreen state changes
         document.addEventListener('fullscreenchange', updateFsIcon);
     </script>
 
