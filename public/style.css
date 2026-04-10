@@ -289,21 +289,3 @@ body {
         font-size: 17px;
     }
 }
-/* ── Portrait fallback ── */
-/* When the phone is held vertically: rotate the page 90deg AND scale it to fit. */
-@media (orientation: portrait) {
-    body {
-        /* Swap width/height so it fills the screen like a landscape layout */
-        width: 100vh;
-        height: 100vw;
-        /* Rotate 90 degrees and shift back into view */
-        transform-origin: top left;
-        transform: rotate(90deg) translateY(-100%);
-        /* Scale down so the full rotated content fits inside the portrait viewport */
-        zoom: calc(100vw / 100vh);
-        position: fixed;
-        top: 0;
-        left: 0;
-        overflow: hidden;
-    }
-}
