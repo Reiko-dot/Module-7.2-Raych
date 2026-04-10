@@ -147,13 +147,20 @@
                     else if (angle > 135 || angle <= -135) dir = prefix + '-left';
                     else                                    dir = prefix + '-up';
                 }
-                if (dir !== lastDir) { lastDir = dir; sendMessage(dir); }
+                if (dir !== lastDir) {
+                    // Release the old direction before pressing the new one
+                    if (lastDir && lastDir !== prefix + '-center') send(lastDir, 'release');
+                    lastDir = dir;
+                    send(dir, 'press');
+                }
             }
 
             function resetStick() {
                 stickEl.style.transform = 'translate(-50%, -50%)';
+                // Release whatever direction was last held
+                if (lastDir && lastDir !== prefix + '-center') send(lastDir, 'release');
                 lastDir = null;
-                sendMessage(prefix + '-center');
+                send(prefix + '-center', 'press');
             }
 
             baseEl.addEventListener('touchstart', (e) => {
@@ -169,7 +176,14 @@
                     if (t.identifier === activeTouch) moveStick(t.clientX, t.clientY);
             }, { passive: false });
 
+            // touchend: finger lifted normally
             baseEl.addEventListener('touchend', (e) => {
+                for (const t of e.changedTouches)
+                    if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
+            });
+
+            // touchcancel: finger interrupted (e.g. slid off screen) — still need to release
+            baseEl.addEventListener('touchcancel', (e) => {
                 for (const t of e.changedTouches)
                     if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
             });
