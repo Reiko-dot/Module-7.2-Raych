@@ -118,7 +118,7 @@ body {
 .left-side {
     display: flex;
     align-items: flex-end;
-    gap: 20px;
+    gap: 4px;
 }
 
 .right-side {
@@ -130,18 +130,17 @@ body {
 /* ── D-pad ── */
 .direction-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(3, 62px);
+    grid-template-rows: repeat(3, 62px);
+    gap: 3px;
     border-radius: 22px;
     padding: 0;
-    transform: translateY(-10%);
+    transform: translateY(-10%) translateX(-16px);
 }
 
 .direction-section button {
-    width: 95px;
-    height: 95px;
-    border: none;
+    width: 62px;
+    height: 62px;
     border-radius: 12px;
     font-size: clamp(22px, 3vw, 38px);
     color: rgb(240, 240, 240);
@@ -245,6 +244,10 @@ body {
     flex-shrink: 0;
     touch-action: none;
     cursor: pointer;
+}
+
+#joystickBase {
+    transform: translateX(-20px);
 }
 
 .joystick-stick {
