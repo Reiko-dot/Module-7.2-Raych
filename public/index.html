@@ -157,10 +157,9 @@
 
             function resetStick() {
                 stickEl.style.transform = 'translate(-50%, -50%)';
-                // Release whatever direction was last held
+                // Only release the last direction — don't send center as a press
                 if (lastDir && lastDir !== prefix + '-center') send(lastDir, 'release');
                 lastDir = null;
-                send(prefix + '-center', 'press');
             }
 
             baseEl.addEventListener('touchstart', (e) => {
