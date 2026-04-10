@@ -91,7 +91,7 @@ wss.on('connection', (ws) => {
                 await keyboard.releaseKey(heldStickKey);
                 heldStickKey = null;
             }
-        }, 300);
+        }, 500);
     }
 
     function resetRstickWatchdog() {
@@ -102,7 +102,7 @@ wss.on('connection', (ws) => {
                 await keyboard.releaseKey(heldRstickKey);
                 heldRstickKey = null;
             }
-        }, 300);
+        }, 500);
     }
 
     ws.on('message', async (raw) => {

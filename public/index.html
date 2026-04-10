@@ -81,38 +81,44 @@
             console.log('Server confirmed:', data.response);
         };
 
-        // Cooldown map: prevents a button from firing more than once per 150ms
-        const lastSent = {};
-
-        function sendMessage(button) {
+        // Send a button event (press or release) to the server
+        function send(button, action) {
             if (ws.readyState !== WebSocket.OPEN) {
                 statusEl.textContent = 'Not connected';
                 statusEl.style.color = '#ffcc00';
                 return;
             }
             if (!allowedButtons.has(button)) return;
-
-            const now = Date.now();
-            if (lastSent[button] && now - lastSent[button] < 150) return;
-            lastSent[button] = now;
-
-            ws.send(JSON.stringify({ button }));
+            ws.send(JSON.stringify({ button, action }));
         }
 
-        // Attach button handlers via touchstart (mobile) + click (desktop).
-        // touchstart calls e.preventDefault() which blocks the synthetic click/mousedown
-        // that would otherwise bubble and re-trigger sendMessage repeatedly.
+        // Joysticks only send direction changes, so they always use 'press'
+        function sendMessage(button) { send(button, 'press'); }
+
+        // Attach press + release to every button
         document.querySelectorAll('[data-msg]').forEach(btn => {
             const msg = btn.dataset.msg;
 
+            // Mobile: vinger neer = press, vinger omhoog = release
             btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();      // block synthetic mouse events
-                e.stopPropagation();     // stop bubbling to joystick listeners
-                sendMessage(msg);
+                e.preventDefault();
+                e.stopPropagation();
+                send(msg, 'press');
             }, { passive: false });
 
-            // Fallback for desktop mouse clicks
-            btn.addEventListener('click', () => sendMessage(msg));
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                send(msg, 'release');
+            }, { passive: false });
+
+            // Desktop: muis indrukken = press, loslaten of weggaan = release
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                send(msg, 'press');
+            });
+            btn.addEventListener('mouseup',    () => send(msg, 'release'));
+            btn.addEventListener('mouseleave', () => send(msg, 'release'));
         });
 
         function makeJoystick(baseEl, stickEl, prefix) {
