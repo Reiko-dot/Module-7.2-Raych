@@ -1,234 +1,241 @@
+/* Pas deze instellingen toe op elk element op de pagina */
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    /* verwijder blauwe highlight op mobiel */
-    tap-highlight-color: transparent;
-    user-select: none;
-    /* voorkom tekst selectie */
-    -webkit-user-select: none;
+    box-sizing: border-box; /* Zorg dat padding en border meegeteld worden in de breedte/hoogte */
+    -webkit-tap-highlight-color: transparent; /* Verwijder de blauwe flits bij aanraken op mobiel (Safari) */
+    tap-highlight-color: transparent; /* Zelfde maar dan voor andere browsers */
+    user-select: none; /* Voorkom dat tekst per ongeluk geselecteerd wordt */
+    -webkit-user-select: none; /* Zelfde maar dan voor Safari */
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #0f1f4f;
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    position: fixed;
-    /* voorkom scrollen op mobiel */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    touch-action: manipulation;
+body { /* De achtergrond en basis van de hele pagina */
+    font-family: Arial, sans-serif; /* Gebruik een simpel leesbaar lettertype */
+    background-color: #0f1f4f; /* Donkerblauwe achtergrond buiten de controller */
+    margin: 0; /* Geen extra ruimte rondom de pagina */
+    padding: 0; /* Geen extra binnenruimte */
+    width: 100vw; /* Precies zo breed als het scherm */
+    height: 100vh; /* Precies zo hoog als het scherm */
+    overflow: hidden; /* Verberg alles wat buiten het scherm valt */
+    position: fixed; /* Zet de pagina vast zodat je niet kunt scrollen */
+    display: flex; /* Gebruik flexbox om de inhoud te positioneren */
+    justify-content: center; /* Centreer horizontaal */
+    align-items: center; /* Centreer verticaal */
+    touch-action: manipulation; /* Verwijder de 300ms vertraging bij aanraken */
 }
 
-.container {
-    width: 96vw;
-    height: 92vh;
-    border-radius: 28px;
-    background: #162c66;
-    box-shadow: 0 0 0 8px #131c50;
-    display: flex;
-    flex-direction: column;
-    padding: 16px 24px;
-    gap: 12px;
+.container { /* De grote controller-doos in het midden */
+    width: 96vw; /* Bijna zo breed als het scherm */
+    height: 92vh; /* Bijna zo hoog als het scherm */
+    border-radius: 28px; /* Ronde hoeken voor een gamepad-look */
+    background: #162c66; /* Iets lichter blauw dan de achtergrond */
+    box-shadow: 0 0 0 8px #131c50; /* Donkere rand rondom de controller doos */
+    display: flex; /* Gebruik flexbox voor de indeling */
+    flex-direction: column; /* Stapel de onderdelen boven elkaar */
+    padding: 16px 24px; /* Ruimte aan de binnenkant van de doos */
+    gap: 12px; /* Ruimte tussen de bovenste balk en de knoppen eronder */
 }
 
-.top-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    position: relative;
+.top-bar { /* De bovenste balk met Select, status en ESC */
+    display: flex; /* Zet de onderdelen naast elkaar */
+    justify-content: center; /* Centreer ze horizontaal */
+    align-items: center; /* Lijn ze verticaal uit op het midden */
+    gap: 24px; /* Ruimte tussen de knoppen en de statustekst */
+    position: relative; /* Nodig zodat de fullscreen knop absoluut gepositioneerd kan worden */
 }
 
-.top-bar button {
-    width: 130px;
-    height: 56px;
-    border: none;
-    border-radius: 14px;
-    font-size: 20px;
-    color: rgb(240, 240, 240);
-    cursor: pointer;
-    touch-action: manipulation;
-    /* verwijder 300ms tap delay */
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+.top-bar button { /* Stijl voor de Select en ESC knoppen */
+    width: 130px; /* Breedte van de knop */
+    height: 56px; /* Hoogte van de knop */
+    border: none; /* Geen rand */
+    border-radius: 14px; /* Ronde hoeken */
+    font-size: 20px; /* Grootte van de tekst op de knop */
+    color: rgb(240, 240, 240); /* Bijna witte tekst */
+    cursor: pointer; /* Laat een handje zien bij hoveren op desktop */
+    touch-action: manipulation; /* Verwijder de 300ms vertraging */
+    transition: transform 20ms linear, box-shadow 20ms linear; /* Animeer het loslaten in 20ms */
+    box-shadow: 0 6px 0 rgba(0,0,0,0.45), 0 8px 12px rgba(0,0,0,0.3); /* Schaduw onder de knop die de 3D diepte geeft */
+    transform: translateY(0); /* Begin positie: niet verschoven */
 }
 
-.top-bar button:active {
-    transform: scale(0.95);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+.top-bar button:active,
+.top-bar button.pressed { /* Als de knop ingedrukt wordt (via muis of touch) */
+    transform: translateY(5px); /* Schuif de knop 5 pixels omlaag zodat het eruitziet alsof je hem indrukt */
+    box-shadow: 0 1px 0 rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.2); /* Maak de schaduw klein zodat het diepte-effect klopt */
+    transition: transform 10ms linear, box-shadow 10ms linear; /* Animeer het indrukken in 10ms (sneller dan loslaten) */
 }
 
-.select-btn {
-    background-color: #4da6ff;
+.select-btn { /* Kleur van de Select knop */
+    background-color: #4da6ff; /* Blauw */
 }
 
-.home-btn {
-    background-color: #66cc66;
+.home-btn { /* Kleur van de ESC knop */
+    background-color: #66cc66; /* Groen */
 }
 
-#status {
-    color: #fff;
-    font-size: 14px;
-    margin: 0;
-    min-width: 120px;
-    text-align: center;
+#status { /* De tekst die de verbindingsstatus toont */
+    color: #fff; /* Witte tekst */
+    font-size: 14px; /* Klein lettertype */
+    margin: 0; /* Geen extra ruimte rondom */
+    min-width: 120px; /* Minimale breedte zodat de tekst niet beweegt bij statuswijziging */
+    text-align: center; /* Tekst gecentreerd */
 }
 
-.fullscreen-btn {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 42px;
-    height: 42px;
-    border: none;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.75);
-    font-size: 20px;
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
+.fullscreen-btn { /* Het kleine knopje rechts voor volledig scherm */
+    position: absolute; /* Positioneer dit los van de andere elementen */
+    right: 0; /* Helemaal rechts in de balk */
+    top: 50%; /* Start op de helft van de hoogte */
+    transform: translateY(-50%); /* Corrigeer omhoog zodat het echt gecentreerd staat */
+    width: 42px; /* Breedte van het knopje */
+    height: 42px; /* Hoogte van het knopje */
+    border: none; /* Geen rand */
+    border-radius: 10px; /* Licht ronde hoeken */
+    background-color: rgba(255, 255, 255, 0.12); /* Doorzichtig wit als achtergrond */
+    color: rgba(255, 255, 255, 0.75); /* Licht doorzichtig wit icoontje */
+    font-size: 20px; /* Grootte van het icoontje */
+    cursor: pointer; /* Handje bij hoveren op desktop */
+    touch-action: manipulation; /* Geen vertraging op mobiel */
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; /* Zachte overgang bij hoveren/klikken */
+    display: flex; /* Gebruik flexbox om het icoontje te centreren */
+    align-items: center; /* Verticaal centreren */
+    justify-content: center; /* Horizontaal centreren */
+    line-height: 1; /* Voorkom extra ruimte boven/onder het icoontje */
 }
 
-.fullscreen-btn:active {
-    background-color: rgba(255, 255, 255, 0.25);
-    color: #fff;
-    transform: translateY(-50%) scale(0.93);
+.fullscreen-btn:active { /* Als het fullscreen knopje ingedrukt wordt */
+    background-color: rgba(255, 255, 255, 0.25); /* Iets witter worden */
+    color: #fff; /* Volledig wit icoontje */
+    transform: translateY(-50%) scale(0.93); /* Iets kleiner worden én blijf gecentreerd */
 }
 
-.bottom-row {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 2vw 6% 2vw;
+.bottom-row { /* De onderste sectie met d-pad links en face knoppen rechts */
+    flex: 1; /* Neem alle overgebleven ruimte in */
+    display: flex; /* Zet de twee kanten naast elkaar */
+    justify-content: space-between; /* Duw links en rechts naar de uiteinden */
+    align-items: center; /* Centreer beide kanten verticaal */
+    padding: 0 2vw; /* Kleine ruimte aan de zijkanten */
 }
 
-.left-side {
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
+.left-side { /* De linker helft (d-pad) */
+    display: flex; /* Gebruik flexbox */
+    align-items: center; /* Verticaal centreren */
+    gap: 4px; /* Kleine ruimte tussen eventuele elementen */
 }
 
-.right-side {
-    display: flex;
-    align-items: flex-end;
-    gap: 20px;
+.right-side { /* De rechter helft (face knoppen) */
+    display: flex; /* Gebruik flexbox */
+    align-items: center; /* Verticaal centreren */
+    gap: 20px; /* Ruimte tussen de knoppen */
 }
 
 /* ── D-pad ── */
-.direction-section {
-    display: grid;
-    grid-template-columns: repeat(3, 62px);
-    grid-template-rows: repeat(3, 62px);
-    gap: 3px;
-    border-radius: 22px;
-    padding: 0;
-    transform: translateY(-10%) translateX(-16px);
+.direction-section { /* Het richtingskruis */
+    display: grid; /* Gebruik een raster voor de kruisvorm */
+    grid-template-columns: repeat(3, 62px); /* Drie kolommen van elk 62px breed */
+    grid-template-rows: repeat(3, 62px); /* Drie rijen van elk 62px hoog */
+    gap: 4px; /* Kleine ruimte tussen de knoppen */
+    border-radius: 22px; /* Ronde hoeken op de hele groep */
+    padding: 0; /* Geen binnenruimte */
 }
 
-.direction-section button {
-    width: 62px;
-    height: 62px;
-    border-radius: 12px;
-    font-size: clamp(22px, 3vw, 38px);
-    color: rgb(240, 240, 240);
-    background-color: #371a45;
-    cursor: pointer;
-    touch-action: manipulation;
-    /* verwijder 300ms tap delay */
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+.direction-section button { /* Elke richtingsknop afzonderlijk */
+    width: 62px; /* Breedte van de knop */
+    height: 62px; /* Hoogte van de knop */
+    border-radius: 12px; /* Ronde hoeken */
+    font-size: clamp(22px, 3vw, 38px); /* Lettergrootte past zich aan het scherm aan */
+    color: rgb(240, 240, 240); /* Bijna witte pijltjes */
+    background-color: #371a45; /* Donkerpaarse achtergrond */
+    cursor: pointer; /* Handje bij hoveren op desktop */
+    touch-action: manipulation; /* Geen vertraging op mobiel */
+    transition: transform 20ms linear, box-shadow 20ms linear; /* Animeer het loslaten in 20ms */
+    box-shadow: 0 6px 0 rgba(0,0,0,0.5), 0 8px 12px rgba(0,0,0,0.3); /* Schaduw die de 3D diepte geeft */
+    transform: translateY(0); /* Begin positie: niet verschoven */
 }
 
-.direction-section button:active {
-    transform: scale(0.93);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+.direction-section button:active,
+.direction-section button.pressed { /* Als een richtingsknop ingedrukt wordt */
+    transform: translateY(5px); /* Schuif 5 pixels omlaag voor het indruk-effect */
+    box-shadow: 0 1px 0 rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.2); /* Maak de schaduw plat */
+    transition: transform 10ms linear, box-shadow 10ms linear; /* Snap snel naar de ingedrukte positie */
 }
 
+/* Plaatsing van elke knop in het raster */
 .up-btn {
-    grid-area: 1 / 2;
+    grid-area: 1 / 2; /* Bovenste rij, middelste kolom */
 }
 
 .left-btn {
-    grid-area: 2 / 1;
+    grid-area: 2 / 1; /* Middelste rij, linker kolom */
 }
 
 .center-btn {
-    grid-area: 2 / 2;
+    grid-area: 2 / 2; /* Middelste rij, middelste kolom */
 }
 
 .right-btn {
-    grid-area: 2 / 3;
+    grid-area: 2 / 3; /* Middelste rij, rechter kolom */
 }
 
 .down-btn {
-    grid-area: 3 / 2;
+    grid-area: 3 / 2; /* Onderste rij, middelste kolom */
 }
 
-.center-btn {
-    border-radius: 50% !important;
-    background: #ccc !important;
-    color: #000 !important;
-    font-size: clamp(24px, 3.5vw, 42px) !important;
+.center-btn { /* De middelste knop krijgt een aparte stijl */
+    border-radius: 50% !important; /* Maak het een cirkel */
+    background: #ccc !important; /* Grijze achtergrond */
+    color: #000 !important; /* Zwart bolletje */
+    font-size: clamp(24px, 3.5vw, 42px) !important; /* Iets groter bolletje */
 }
 
 /* ── YXBA face buttons ── */
-.face-section {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 8px;
-    border-radius: 22px;
-    padding: 0;
-    transform: translateY(-10%);
+.face-section { /* De vier ronde gekleurde knoppen rechts */
+    display: grid; /* Gebruik een raster voor de diamantvorm */
+    grid-template-columns: repeat(3, 1fr); /* Drie gelijke kolommen */
+    grid-template-rows: repeat(3, 1fr); /* Drie gelijke rijen */
+    gap: 8px; /* Ruimte tussen de knoppen */
+    border-radius: 22px; /* Ronde hoeken op de hele groep */
+    padding: 0; /* Geen binnenruimte */
 }
 
-.face-section button {
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 50%;
-    font-size: clamp(18px, 2.5vw, 28px);
-    font-weight: bold;
-    color: rgb(240, 240, 240);
-    cursor: pointer;
-    touch-action: manipulation;
-    /* verwijder 300ms tap delay */
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+.face-section button { /* Elke face knop afzonderlijk */
+    width: 50px; /* Breedte van de knop */
+    height: 50px; /* Hoogte van de knop */
+    border: none; /* Geen rand */
+    border-radius: 50%; /* Volledig rond */
+    font-size: clamp(18px, 2.5vw, 28px); /* Lettergrootte past zich aan */
+    font-weight: bold; /* Dikgedrukte letter */
+    color: rgb(240, 240, 240); /* Bijna witte tekst */
+    cursor: pointer; /* Handje bij hoveren op desktop */
+    touch-action: manipulation; /* Geen vertraging op mobiel */
+    transition: transform 20ms linear, box-shadow 20ms linear; /* Animeer het loslaten in 20ms */
+    box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 8px 12px rgba(0,0,0,0.3); /* Schaduw die de 3D diepte geeft */
+    transform: translateY(0); /* Begin positie: niet verschoven */
 }
 
-.face-section button:active {
-    transform: scale(0.93);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+.face-section button:active,
+.face-section button.pressed { /* Als een face knop ingedrukt wordt */
+    transform: translateY(5px); /* Schuif 5 pixels omlaag voor het indruk-effect */
+    box-shadow: 0 1px 0 rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2); /* Maak de schaduw plat */
+    transition: transform 10ms linear, box-shadow 10ms linear; /* Snap snel naar de ingedrukte positie */
 }
 
+/* Plaatsing en kleur van elke face knop */
 .y-btn {
-    grid-area: 1 / 2;
-    background-color: #4da6ff;
+    grid-area: 1 / 2; /* Bovenaan in het midden */
+    background-color: #4da6ff; /* Blauw */
 }
 
 .x-btn {
-    grid-area: 2 / 1;
-    background-color: #cc66ff;
+    grid-area: 2 / 1; /* Links in het midden */
+    background-color: #cc66ff; /* Paars */
 }
 
 .b2-btn {
-    grid-area: 2 / 3;
-    background-color: #ff6699;
+    grid-area: 2 / 3; /* Rechts in het midden */
+    background-color: #ff6699; /* Roze */
 }
 
 .a2-btn {
-    grid-area: 3 / 2;
-    background-color: #cc3333;
+    grid-area: 3 / 2; /* Onderaan in het midden */
+    background-color: #cc3333; /* Rood */
 }

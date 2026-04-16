@@ -1,44 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html> <!-- Vertel de browser: dit is een HTML pagina -->
+<html lang="en"> <!-- Begin van de pagina, taal is Engels -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>controller</title>
-    <link rel="stylesheet" href="style.css">
+<head> <!-- Onzichtbaar gedeelte: instellingen en verwijzingen -->
+    <meta charset="UTF-8"> <!-- Gebruik gewone tekens zoals letters en symbolen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> <!-- Pas het scherm aan op de telefoon, geen inzoomen -->
+    <title>controller</title> <!-- De naam die je ziet in het tabblad van de browser -->
+    <link rel="stylesheet" href="style.css"> <!-- Laad het stijlbestand in (kleuren, vormen, layout) -->
 </head>
 
-<body>
+<body> <!-- Alles hieronder is zichtbaar op het scherm -->
 
-    <div class="container">
+    <div class="container"> <!-- De grote buitenste doos die alles omhult -->
 
-        <div class="top-bar">
-            <button class="select-btn" tabindex="-1" data-msg="select">Select</button>
-            <p id="status">Connecting...</p>
-            <button class="home-btn" tabindex="-1" data-msg="esc">ESC</button>
-            <button class="fullscreen-btn" id="fullscreenBtn" tabindex="-1" title="Toggle fullscreen">⛶</button>
+        <div class="top-bar"> <!-- De bovenste balk met knoppen en status -->
+            <button class="select-btn" tabindex="-1" data-msg="select">Select</button> <!-- De blauwe Select knop links -->
+            <p id="status">Connecting...</p> <!-- Tekst in het midden die de verbindingsstatus toont -->
+            <button class="home-btn" tabindex="-1" data-msg="esc">ESC</button> <!-- De groene ESC knop rechts -->
+            <button class="fullscreen-btn" id="fullscreenBtn" tabindex="-1" title="Toggle fullscreen">⛶</button> <!-- Klein knopje om volledig scherm aan/uit te zetten -->
         </div>
 
-        <div class="bottom-row">
+        <div class="bottom-row"> <!-- De onderste rij met de d-pad en de face knoppen -->
 
             <!-- Left side: d-pad -->
-            <div class="left-side">
-                <div class="direction-section">
-                    <button class="up-btn"     tabindex="-1" data-msg="up">↑</button>
-                    <button class="left-btn"   tabindex="-1" data-msg="left">←</button>
-                    <button class="center-btn" tabindex="-1" data-msg="center">•</button>
-                    <button class="right-btn"  tabindex="-1" data-msg="right">→</button>
-                    <button class="down-btn"   tabindex="-1" data-msg="down">↓</button>
+            <div class="left-side"> <!-- Linker helft van het scherm -->
+                <div class="direction-section"> <!-- Het kruis met de richtingsknoppen -->
+                    <button class="up-btn"     tabindex="-1" data-msg="up">↑</button> <!-- Knop omhoog -->
+                    <button class="left-btn"   tabindex="-1" data-msg="left">←</button> <!-- Knop naar links -->
+                    <button class="center-btn" tabindex="-1" data-msg="center">•</button> <!-- Knop in het midden van het kruis -->
+                    <button class="right-btn"  tabindex="-1" data-msg="right">→</button> <!-- Knop naar rechts -->
+                    <button class="down-btn"   tabindex="-1" data-msg="down">↓</button> <!-- Knop omlaag -->
                 </div>
             </div>
 
             <!-- Right side: YXBA face buttons -->
-            <div class="right-side">
-                <div class="face-section">
-                    <button class="y-btn"  tabindex="-1" data-msg="letter-y">Y</button>
-                    <button class="x-btn"  tabindex="-1" data-msg="letter-x">X</button>
-                    <button class="b2-btn" tabindex="-1" data-msg="letter-b">B</button>
-                    <button class="a2-btn" tabindex="-1" data-msg="letter-a">A</button>
+            <div class="right-side"> <!-- Rechter helft van het scherm -->
+                <div class="face-section"> <!-- De vier ronde gekleurde knoppen -->
+                    <button class="y-btn"  tabindex="-1" data-msg="letter-y">Y</button> <!-- Y knop bovenaan -->
+                    <button class="x-btn"  tabindex="-1" data-msg="letter-x">X</button> <!-- X knop links -->
+                    <button class="b2-btn" tabindex="-1" data-msg="letter-b">B</button> <!-- B knop rechts -->
+                    <button class="a2-btn" tabindex="-1" data-msg="letter-a">A</button> <!-- A knop onderaan -->
                 </div>
             </div>
 
@@ -46,95 +46,119 @@
 
     </div>
 
-    <script>
-        // Try to lock the screen to landscape using the Screen Orientation API (works on Android Chrome)
-        // If the browser blocks it (e.g. not a PWA), the CSS fallback in style.css handles it instead
+    <script> <!-- Hier begint de code die de knoppen laat werken -->
+
+        // Probeer het scherm vast te zetten in liggende modus (werkt op Android)
+        // Als de browser dat niet toestaat, doet de CSS het als backup
         if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(() => {});
+            screen.orientation.lock('landscape').catch(() => {}); // Draai naar liggend, negeer foutmelding als het mislukt
         }
 
-        const ws = new WebSocket(`ws://${location.hostname}:8081`);
-        const statusEl = document.getElementById('status');
+        const ws = new WebSocket(`ws://${location.hostname}:8081`); // Maak een verbinding met de server op poort 8081
+        const statusEl = document.getElementById('status'); // Zoek het status-tekstje op in de pagina
 
+        // Lijst van alle knoppen die mogen worden verstuurd naar de server
         const allowedButtons = new Set([
-            'select', 'esc',
-            'left', 'up', 'down', 'right', 'center',
-            'letter-a', 'letter-b', 'letter-x', 'letter-y',
+            'select', 'esc', // Menu knoppen
+            'left', 'up', 'down', 'right', 'center', // D-pad richtingen
+            'letter-a', 'letter-b', 'letter-x', 'letter-y', // Face knoppen
         ]);
 
-        ws.onopen = () => { statusEl.textContent = 'Connected'; statusEl.style.color = '#8efd8e'; };
-        ws.onclose = () => { statusEl.textContent = 'Disconnected'; statusEl.style.color = '#f78c8c'; };
-        ws.onerror = () => { statusEl.textContent = 'Connection error'; statusEl.style.color = '#ffcc00'; };
-        ws.onmessage = (event) => {
+        ws.onopen = () => { statusEl.textContent = 'Connected'; statusEl.style.color = '#8efd8e'; }; // Verbinding gelukt: toon groen "Connected"
+        ws.onclose = () => { statusEl.textContent = 'Disconnected'; statusEl.style.color = '#f78c8c'; }; // Verbinding weg: toon rood "Disconnected"
+        ws.onerror = () => { statusEl.textContent = 'Connection error'; statusEl.style.color = '#ffcc00'; }; // Fout: toon geel "Connection error"
+        ws.onmessage = (event) => { // Als de server iets terugstuurt...
             let data;
-            try { data = JSON.parse(event.data); } catch { return; }
-            if (typeof data.response !== 'string') return;
-            if (!allowedButtons.has(data.response)) return;
-            console.log('Server confirmed:', data.response);
+            try { data = JSON.parse(event.data); } catch { return; } // Zet het bericht om naar leesbare data, stop als het niet lukt
+            if (typeof data.response !== 'string') return; // Stop als het antwoord geen tekst is
+            if (!allowedButtons.has(data.response)) return; // Stop als het een onbekende knop is
+            console.log('Server confirmed:', data.response); // Laat in de console zien welke knop de server bevestigde
         };
 
-        // Send a button event (press or release) to the server
+        // Stuur een knop-actie (indrukken of loslaten) naar de server
         function send(button, action) {
-            if (ws.readyState !== WebSocket.OPEN) {
-                statusEl.textContent = 'Not connected';
-                statusEl.style.color = '#ffcc00';
-                return;
+            if (ws.readyState !== WebSocket.OPEN) { // Controleer of de verbinding open is
+                statusEl.textContent = 'Not connected'; // Zo niet: toon waarschuwing
+                statusEl.style.color = '#ffcc00'; // Maak de tekst geel
+                return; // Stop hier
             }
-            if (!allowedButtons.has(button)) return;
-            ws.send(JSON.stringify({ button, action }));
+            if (!allowedButtons.has(button)) return; // Stuur alleen bekende knoppen door
+            ws.send(JSON.stringify({ button, action })); // Stuur de knoopnaam en actie als bericht naar de server
         }
 
-        // Attach press + release to every button
+        // Voeg druk- en loslaatacties toe aan elke knop op de pagina
         document.querySelectorAll('[data-msg]').forEach(btn => {
-            const msg = btn.dataset.msg;
+            const msg = btn.dataset.msg; // Haal de naam van de knop op (bijv. "up" of "letter-a")
 
-            // Mobile: vinger neer = press, vinger omhoog = release
+            // Mobiel: vinger neerzetten = indrukken
             btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                send(msg, 'press');
-            }, { passive: false });
+                e.preventDefault(); // Voorkom standaard browsergedrag (zoals scrollen)
+                e.stopPropagation(); // Zorg dat de aanraking niet verder gaat naar andere elementen
+                btn.classList.add('pressed'); // Voeg de "ingedrukt" stijl toe zodat de knop meteen reageert
+                send(msg, 'press'); // Stuur "press" naar de server
+            }, { passive: false }); // passive: false is nodig om preventDefault te mogen gebruiken
 
+            // Mobiel: vinger optillen = loslaten
             btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                send(msg, 'release');
+                e.preventDefault(); // Voorkom standaard browsergedrag
+                e.stopPropagation(); // Zorg dat het niet verder gaat
+                btn.classList.remove('pressed'); // Verwijder de "ingedrukt" stijl
+                send(msg, 'release'); // Stuur "release" naar de server
             }, { passive: false });
 
-            // Desktop: muis indrukken = press, loslaten of weggaan = release
+            // Mobiel: aanraking onderbroken (bijv. telefoontje) = loslaten
+            btn.addEventListener('touchcancel', (e) => {
+                e.preventDefault(); // Voorkom standaard browsergedrag
+                btn.classList.remove('pressed'); // Verwijder de "ingedrukt" stijl
+                send(msg, 'release'); // Stuur "release" naar de server
+            }, { passive: false });
+
+            // Desktop: muisknop indrukken = press
             btn.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                send(msg, 'press');
+                e.preventDefault(); // Voorkom standaard browsergedrag
+                btn.classList.add('pressed'); // Voeg de "ingedrukt" stijl toe
+                send(msg, 'press'); // Stuur "press" naar de server
             });
-            btn.addEventListener('mouseup',    () => send(msg, 'release'));
-            btn.addEventListener('mouseleave', () => send(msg, 'release'));
+
+            // Desktop: muisknop loslaten = release
+            btn.addEventListener('mouseup', () => {
+                btn.classList.remove('pressed'); // Verwijder de "ingedrukt" stijl
+                send(msg, 'release'); // Stuur "release" naar de server
+            });
+
+            // Desktop: muis beweegt van de knop af = ook loslaten
+            btn.addEventListener('mouseleave', () => {
+                btn.classList.remove('pressed'); // Verwijder de "ingedrukt" stijl
+                send(msg, 'release'); // Stuur "release" zodat de knop niet blijft hangen
+            });
         });
 
 
-        // Fullscreen toggle
-        const fsBtn = document.getElementById('fullscreenBtn');
+        // Volledig scherm aan/uitzetten
+        const fsBtn = document.getElementById('fullscreenBtn'); // Zoek de fullscreen knop op
 
-        function updateFsIcon() {
-            fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
-            fsBtn.title = document.fullscreenElement ? 'Exit fullscreen' : 'Go fullscreen';
+        function updateFsIcon() { // Pas het icoontje aan op basis van de huidige staat
+            fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶'; // Kruis als volledig scherm actief is, anders het uitvouw-icoontje
+            fsBtn.title = document.fullscreenElement ? 'Exit fullscreen' : 'Go fullscreen'; // Pas ook de tooltip aan
         }
 
-        fsBtn.addEventListener('click', () => {
+        fsBtn.addEventListener('click', () => { // Als er op de knop geklikt wordt...
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
+                document.documentElement.requestFullscreen().catch(() => {}); // Ga naar volledig scherm, negeer fout als het niet lukt
             } else {
-                document.exitFullscreen().catch(() => {});
+                document.exitFullscreen().catch(() => {}); // Verlaat volledig scherm
             }
         });
 
-        fsBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            fsBtn.click();
+        fsBtn.addEventListener('touchstart', (e) => { // Op mobiel: aanraking op de fullscreen knop
+            e.preventDefault(); // Voorkom standaard browsergedrag
+            e.stopPropagation(); // Zorg dat de aanraking niet verder gaat
+            fsBtn.click(); // Doe hetzelfde als een gewone klik
         }, { passive: false });
 
-        document.addEventListener('fullscreenchange', updateFsIcon);
+        document.addEventListener('fullscreenchange', updateFsIcon); // Elke keer dat volledig scherm verandert, update het icoontje
+
     </script>
 
-</body>
-</html>
+</body> <!-- Einde van de zichtbare inhoud -->
+</html> <!-- Einde van de pagina -->
