@@ -21,7 +21,7 @@
 
         <div class="bottom-row">
 
-            <!-- Left side: d-pad + left joystick -->
+            <!-- Left side: d-pad -->
             <div class="left-side">
                 <div class="direction-section">
                     <button class="up-btn"     tabindex="-1" data-msg="up">↑</button>
@@ -30,16 +30,10 @@
                     <button class="right-btn"  tabindex="-1" data-msg="right">→</button>
                     <button class="down-btn"   tabindex="-1" data-msg="down">↓</button>
                 </div>
-                <div class="joystick-base" id="joystickBase">
-                    <div class="joystick-stick" id="joystickStick"></div>
-                </div>
             </div>
 
-            <!-- Right side: right joystick + YXBA face buttons -->
+            <!-- Right side: YXBA face buttons -->
             <div class="right-side">
-                <div class="joystick-base" id="joystickBase2">
-                    <div class="joystick-stick" id="joystickStick2"></div>
-                </div>
                 <div class="face-section">
                     <button class="y-btn"  tabindex="-1" data-msg="letter-y">Y</button>
                     <button class="x-btn"  tabindex="-1" data-msg="letter-x">X</button>
@@ -66,8 +60,6 @@
             'select', 'esc',
             'left', 'up', 'down', 'right', 'center',
             'letter-a', 'letter-b', 'letter-x', 'letter-y',
-            'stick-up', 'stick-down', 'stick-left', 'stick-right', 'stick-center',
-            'rstick-up', 'rstick-down', 'rstick-left', 'rstick-right', 'rstick-center'
         ]);
 
         ws.onopen = () => { statusEl.textContent = 'Connected'; statusEl.style.color = '#8efd8e'; };
@@ -91,9 +83,6 @@
             if (!allowedButtons.has(button)) return;
             ws.send(JSON.stringify({ button, action }));
         }
-
-        // Joysticks only send direction changes, so they always use 'press'
-        function sendMessage(button) { send(button, 'press'); }
 
         // Attach press + release to every button
         document.querySelectorAll('[data-msg]').forEach(btn => {
@@ -121,80 +110,6 @@
             btn.addEventListener('mouseleave', () => send(msg, 'release'));
         });
 
-        function makeJoystick(baseEl, stickEl, prefix) {
-            const DEAD_ZONE = 0.25;
-            let activeTouch = null;
-            let lastDir = null;
-
-            function getCenter() {
-                const r = baseEl.getBoundingClientRect();
-                return { x: r.left + r.width / 2, y: r.top + r.height / 2, radius: r.width / 2 };
-            }
-
-            function moveStick(cx, cy) {
-                const { x, y, radius } = getCenter();
-                const maxTravel = radius * 0.55;
-                let dx = cx - x, dy = cy - y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist > maxTravel) { dx = (dx / dist) * maxTravel; dy = (dy / dist) * maxTravel; }
-                stickEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                const norm = dist / maxTravel;
-                let dir = prefix + '-center';
-                if (norm > DEAD_ZONE) {
-                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                    if (angle > -45 && angle <= 45)        dir = prefix + '-right';
-                    else if (angle > 45 && angle <= 135)   dir = prefix + '-down';
-                    else if (angle > 135 || angle <= -135) dir = prefix + '-left';
-                    else                                    dir = prefix + '-up';
-                }
-                if (dir !== lastDir) {
-                    // Release the old direction before pressing the new one
-                    if (lastDir && lastDir !== prefix + '-center') send(lastDir, 'release');
-                    lastDir = dir;
-                    send(dir, 'press');
-                }
-            }
-
-            function resetStick() {
-                stickEl.style.transform = 'translate(-50%, -50%)';
-                // Only release the last direction — don't send center as a press
-                if (lastDir && lastDir !== prefix + '-center') send(lastDir, 'release');
-                lastDir = null;
-            }
-
-            baseEl.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                if (activeTouch !== null) return;
-                activeTouch = e.changedTouches[0].identifier;
-                moveStick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-            }, { passive: false });
-
-            baseEl.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                for (const t of e.changedTouches)
-                    if (t.identifier === activeTouch) moveStick(t.clientX, t.clientY);
-            }, { passive: false });
-
-            // touchend: finger lifted normally
-            baseEl.addEventListener('touchend', (e) => {
-                for (const t of e.changedTouches)
-                    if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
-            });
-
-            // touchcancel: finger interrupted (e.g. slid off screen) — still need to release
-            baseEl.addEventListener('touchcancel', (e) => {
-                for (const t of e.changedTouches)
-                    if (t.identifier === activeTouch) { activeTouch = null; resetStick(); }
-            });
-
-            let mouseDown = false;
-            baseEl.addEventListener('mousedown', (e) => { mouseDown = true; moveStick(e.clientX, e.clientY); });
-            document.addEventListener('mousemove', (e) => { if (mouseDown) moveStick(e.clientX, e.clientY); });
-            document.addEventListener('mouseup', () => { if (mouseDown) { mouseDown = false; resetStick(); } });
-        }
-
-        makeJoystick(document.getElementById('joystickBase'),  document.getElementById('joystickStick'),  'stick');
-        makeJoystick(document.getElementById('joystickBase2'), document.getElementById('joystickStick2'), 'rstick');
 
         // Fullscreen toggle
         const fsBtn = document.getElementById('fullscreenBtn');

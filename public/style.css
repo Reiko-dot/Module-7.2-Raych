@@ -195,8 +195,8 @@ body {
 }
 
 .face-section button {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     border: none;
     border-radius: 50%;
     font-size: clamp(18px, 2.5vw, 28px);
@@ -231,64 +231,4 @@ body {
 .a2-btn {
     grid-area: 3 / 2;
     background-color: #cc3333;
-}
-
-/* ── Joysticks ── */
-.joystick-base {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    border: 3px solid rgba(255, 255, 255, 0.15);
-    position: relative;
-    flex-shrink: 0;
-    touch-action: none;
-    cursor: pointer;
-}
-
-#joystickBase {
-    transform: translateX(-20px);
-}
-
-.joystick-stick {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #555, #1a1a1a);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.15);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: transform 0.05s ease;
-    pointer-events: none;
-}
-
-/* ── Landscape short screens ── */
-@media (max-height: 450px) {
-    .direction-section button {
-        width: 64px;
-        height: 64px;
-    }
-
-    .face-section button {
-        width: 50px;
-        height: 50px;
-    }
-
-    .joystick-base {
-        width: 100px;
-        height: 100px;
-    }
-
-    .joystick-stick {
-        width: 50px;
-        height: 50px;
-    }
-
-    .top-bar button {
-        width: 100px;
-        height: 46px;
-        font-size: 17px;
-    }
 }
