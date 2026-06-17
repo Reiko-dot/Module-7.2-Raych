@@ -12,11 +12,14 @@ remote-controller/
 │   ├── index.html
 │   ├── server-1.js
 │   └── style.css
+├── .gitattributes
 ├── .gitignore
+├── README.md
+├── Video Project 2.mp4
 ├── package-lock.json
 ├── package.json
-├── README.md
-└── trello-planning
+├── remote-controller.png
+└──trello-planning
 ```
 
 ## Over dit project
